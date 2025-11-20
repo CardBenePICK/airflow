@@ -16,3 +16,5 @@ logs
 # 인증 파일
 **/credentials.json
 **/token.json
+
+config/
