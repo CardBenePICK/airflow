@@ -43,7 +43,12 @@
 
     - config 파일이 없다면 생성해서 json 파일을 추가합니다.
     
+7. token.json 생성:
 
+    - credientials.json 설정이 완료되었다면, generate_token.py를 실행하여 token.json 을 생성합니다.
+
+    - confing 파일에 생성된 token.json 파일을 넣습니다.
+    
 ## 2. MySQL 설정
 - 현재 사용자의 정보를 얻기 위해 MySQL을 사용하고 있습니다
 
@@ -55,3 +60,8 @@ MYSQL_DB="Your Database Schema name"
 MYSQL_USER="Your user name"
 MYSQL_PASSWORD="Your user password"
 ```
+## 3. 실행
+```
+docker compose up
+```
+
