@@ -13,6 +13,7 @@ def one_col(sql: str, params: Optional[Iterable[Any]] = None) -> list:
     print("row도 궁금하다", rows)
     result = [row[0] for row in rows]
     print(f"ONE_COL FINAL RESULT: {result}")
+
     return result
 
 def df(sql: str, params: Optional[Iterable[Any]] = None) -> pd.DataFrame:
@@ -27,6 +28,18 @@ def df(sql: str, params: Optional[Iterable[Any]] = None) -> pd.DataFrame:
     print(f"COLUMNS: {columns}")
     return pd.DataFrame(rows, columns=columns)
 
+def execute_sql(sql: str, params: Optional[Iterable[Any]] = None):
+    """ INSERT, DELETE 와 같은 return 값이 없는 sql문 실행"""
+    try:
+        with get_conn() as conn, conn.cursor() as cur:
+            print(params)
+            cur.execute(sql, params or ())
+
+            conn.commit()
+        return "성공"
+    except:
+        return "실패"
+    
 def one(sql: str, params: Optional[Iterable[Any]] = None) -> Optional[Dict]:
     with get_conn() as conn, conn.cursor() as cur:
         cur.execute(sql, params or ())
@@ -166,3 +179,33 @@ def get_user_each_card_use_with_performance(user_id: int) -> pd.DataFrame:
     benefit_df = df(sql, (user_id,))
     return benefit_df
 
+def insert_val_notification(user_id :int, alarm_cate :int, content : str):
+    sql = """
+        Insert into 
+        notifications(user_id, alarm_type,content) 
+        values (%s, %s, %s)
+    """
+    
+    results = execute_sql(sql,(user_id, alarm_cate, content,))
+    print("results", results)
+    return results
+
+def update_is_active_false():
+    sql = """
+        UPDATE notifications 
+        SET is_active = false 
+        WHERE is_active = true and alarm_type = 1;
+    """
+    
+    results = execute_sql(sql)
+    print("results", results)
+    return results
+
+
+def get_all_user_id_list():
+    sql = """
+        select distinct user_id 
+        from user_master;
+    """
+    user_list = df(sql,)
+    return list(user_list["user_id"])
