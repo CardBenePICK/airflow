@@ -165,18 +165,24 @@ def get_user_each_card_use_with_performance(user_id: int) -> pd.DataFrame:
     """
     
     sql = """
-    select A.card_id as card_id, card_name, current_usage, previous_month_performance as performance
-    from (
-        select card_id, sum(amount_krw) as current_usage 
-        from card_transactions 
-        where user_id = %s
-        group by (card_id)
-    ) as A 
-    join card_master 
-    where card_master.card_id = A.card_id;
+    select A.card_id as card_id, card_name, COALESCE(B.current_usage, 0) as current_usage, previous_month_performance as performance
+    from 
+        (
+            select card_id, card_name, previous_month_performance 
+            from card_master
+            where card_id in (select external_account_id from user_assets where user_id = %s)
+        ) as A
+        left join
+        (
+            select card_id, sum(amount_krw) as current_usage 
+            from card_transactions 
+            where user_id = %s and MONTH(transaction_date) = MONTH(NOW()) AND YEAR(transaction_date) = YEAR(NOW())
+            group by (card_id)
+        ) as B
+        on A.card_id = B.card_id;
     """
 
-    benefit_df = df(sql, (user_id,))
+    benefit_df = df(sql, (user_id, user_id,))
     return benefit_df
 
 def insert_val_notification(user_id :int, alarm_cate :int, content : str):
