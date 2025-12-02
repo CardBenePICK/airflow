@@ -185,6 +185,24 @@ def get_user_each_card_use_with_performance(user_id: int) -> pd.DataFrame:
     benefit_df = df(sql, (user_id, user_id,))
     return benefit_df
 
+def get_seven_days_usage(user_id: int) -> pd.DataFrame:
+    """
+    해당 user의 지난 일주일 동안의 사용 금액 합산
+
+    반환 값 : 합산 금액 : str
+    """
+    
+    sql = """
+        SELECT 
+            IFNULL(SUM(amount_krw), 0) AS usage_7_days
+        FROM card_transactions
+        WHERE user_id = %s AND created_at >= CURDATE() - INTERVAL 7 DAY
+        AND created_at <  CURDATE() ;
+    """
+
+    usage_val = one_col(sql, (user_id))
+    return str(usage_val[0])
+
 def insert_val_notification(user_id :int, alarm_cate :int, content : str):
     sql = """
         Insert into 

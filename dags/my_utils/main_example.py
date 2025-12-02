@@ -1,6 +1,9 @@
-from repo import insert_val_notification, get_user_each_card_use_with_performance, update_is_active_false, get_all_user_id_list
+from repo import get_seven_days_usage, insert_val_notification, get_user_each_card_use_with_performance, update_is_active_false, get_all_user_id_list
 import json
 # a = insert_val_notification(101, 1, '{"card_name":"shin"}')
+a = get_seven_days_usage(10)
+print(a)
+str(a )
 a = get_all_user_id_list()
 list(a["user_id"])
 card_data_list = get_user_each_card_use_with_performance(1)
