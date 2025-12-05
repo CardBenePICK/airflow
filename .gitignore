@@ -18,3 +18,5 @@ logs
 **/token.json
 
 config/
+
+**/crawling_data
