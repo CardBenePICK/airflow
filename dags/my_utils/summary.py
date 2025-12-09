@@ -130,6 +130,14 @@ def merge_context(items):
             parts.append(text)
 
     return "\n".join(parts)
+def check_null_val_count():
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    sql_select = "SELECT card_id, json_notice FROM card_master_temp where summarized_notice is null"
+    cursor.execute(sql_select)
+    rows = cursor.fetchall()
+    total_count = len(rows)
+    return total_count
 
 async def process_card_summaries():
     conn = get_db_connection()

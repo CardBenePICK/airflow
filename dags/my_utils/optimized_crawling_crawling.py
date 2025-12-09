@@ -430,7 +430,7 @@ DETAIL_BASE_URL = "https://www.card-gorilla.com/card/detail/"
 
 # API 요청 설정
 TOTAL_START_ID = 1
-TOTAL_END_ID   = 5
+TOTAL_END_ID   = 2
 BATCH_SIZE     = 400
 RETRY_BACKOFF_FACTOR = 0.8
 
