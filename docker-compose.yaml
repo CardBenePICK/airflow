@@ -49,14 +49,19 @@ x-airflow-common:
   # In order to add custom dependencies or upgrade provider distributions you can use your extended image.
   # Comment the image line, place your Dockerfile in the directory where you placed the docker-compose.yaml
   # and uncomment the "build" line below, Then run `docker-compose build` to build the images.
-  image: ${AIRFLOW_IMAGE_NAME:-apache/airflow:3.0.6}
-  # build: .
+  
+  # [변경] image 대신 build를 사용하도록 수정
+  # image: ${AIRFLOW_IMAGE_NAME:-apache/airflow:3.0.6}
+  build: .
+  
   environment:
     &airflow-common-env
+    OPENAI_API_KEY: ${OPENAI_API_KEY}
     AIRFLOW__CORE__EXECUTOR: CeleryExecutor
     AIRFLOW__CORE__AUTH_MANAGER: airflow.providers.fab.auth_manager.fab_auth_manager.FabAuthManager
     AIRFLOW__DATABASE__SQL_ALCHEMY_CONN: postgresql+psycopg2://airflow:airflow@postgres/airflow
-    AIRFLOW__CELERY__RESULT_BACKEND: db+postgresql://airflow:airflow@postgres/airflow
+    AIRFLOW__CELERY__RESULT_BACKEND: db+postgresql+psycopg2://airflow:airflow@postgres/airflow
+
     AIRFLOW__CELERY__BROKER_URL: redis://:@redis:6379/0
     AIRFLOW__CORE__FERNET_KEY: ''
     AIRFLOW__CORE__DAGS_ARE_PAUSED_AT_CREATION: 'true'
@@ -67,9 +72,10 @@ x-airflow-common:
     # See https://airflow.apache.org/docs/apache-airflow/stable/administration-and-deployment/logging-monitoring/check-health.html#scheduler-health-check-server
     # yamllint enable rule:line-length
     AIRFLOW__SCHEDULER__ENABLE_HEALTH_CHECK: 'true'
-    # WARNING: Use _PIP_ADDITIONAL_REQUIREMENTS option ONLY for a quick checks
-    # for other purpose (development, test and especially production usage) build/extend Airflow image.
-    _PIP_ADDITIONAL_REQUIREMENTS: ${_PIP_ADDITIONAL_REQUIREMENTS:-}
+    
+    # [복구] 빌드 방식을 쓰므로 이 옵션은 다시 비워둡니다.
+    # _PIP_ADDITIONAL_REQUIREMENTS: ${_PIP_ADDITIONAL_REQUIREMENTS:-}
+    
     # The following line can be used to set a custom config file, stored in the local config folder
     AIRFLOW_CONFIG: '/opt/airflow/config/airflow.cfg'
     AIRFLOW__SMTP__SMTP_HOST: "smtp.gmail.com"
@@ -92,6 +98,16 @@ x-airflow-common:
       condition: service_healthy
 
 services:
+  # [유지] Selenium Chrome Standalone (브라우저 역할)
+  chrome:
+    image: selenium/standalone-chrome:latest
+    container_name: airflow-selenium-chrome
+    ports:
+      - "4444:4444"
+      - "7900:7900"
+    shm_size: "2gb"
+    restart: always
+
   postgres:
     image: postgres:13
     environment:
@@ -123,7 +139,7 @@ services:
 
   airflow-apiserver:
     <<: *airflow-common
-    command: api-server
+    command: bash -c "airflow api-server || sleep 3600"
     ports:
       - "8091:8080"
     healthcheck:
@@ -301,7 +317,7 @@ services:
       _AIRFLOW_WWW_USER_CREATE: 'true'
       _AIRFLOW_WWW_USER_USERNAME: ${_AIRFLOW_WWW_USER_USERNAME:-airflow}
       _AIRFLOW_WWW_USER_PASSWORD: ${_AIRFLOW_WWW_USER_PASSWORD:-airflow}
-      _PIP_ADDITIONAL_REQUIREMENTS: ''
+      # _PIP_ADDITIONAL_REQUIREMENTS: ''
     user: "0:0"
 
   airflow-cli:
@@ -343,4 +359,3 @@ services:
 
 volumes:
   postgres-db-volume:
-  
